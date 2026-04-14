@@ -19,10 +19,6 @@ const login = async (req, res) => {
         const googleRes = await oauth2client.getToken(code);
         const tokens = googleRes.tokens;
 
-        if (!tokens?.access_token) {
-          return res.status(400).json({ message: "Invalid Google token" });
-        }
-
         oauth2client.setCredentials(tokens);
 
         const userInfo = await axios.get(
@@ -34,7 +30,7 @@ const login = async (req, res) => {
           }
         );
 
-        const { name, email: googleEmail } = userInfo.data;
+        const { name, email:googleEmail } = userInfo.data;
 
         let user = await sql`
           SELECT * FROM users WHERE email = ${googleEmail}
@@ -49,9 +45,8 @@ const login = async (req, res) => {
             RETURNING *
           `;
         }
-
-        const token = createToken(user[0].id);
-        return res.status(statusCode).json({ user: user[0], token });
+        const token = jwt.sign({ userId: user[0].id }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
+        return res.status(statusCode).json({message:"google login successfully", user: user[0], token });
       } catch (err) {
         console.log("Google Error:", err.message);
         return res.status(500).json({ message: "Google login failed" });
@@ -72,8 +67,8 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = createToken(user[0].id);
-    return res.json({ user: user[0], token });
+    const token = jwt.sign({ userId: user[0].id }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
+    return res.status(200).json({ message: "Login successful", user: user[0], token });
   } catch (error) {
     console.log("SERVER ERROR:", error);
     return res.status(500).json({ message: error.message });

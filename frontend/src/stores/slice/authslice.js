@@ -26,7 +26,14 @@ const initialState = {
 const authSlice = createSlice({
     name:'auth',
     initialState:initialState,
-    reducers:{},
+    reducers:{
+        logout:(state)=>{
+            state.isLoggedIn = false;
+            state.token = null;
+            state.user = null;
+            localStorage.removeItem('token');
+        }
+    },
     extraReducers:(builder)=>{
         builder.addCase(authThunk.pending,(state)=>{
             state.isLoading = true
@@ -45,5 +52,6 @@ const authSlice = createSlice({
         });
     }
 });
+export const { logout } = authSlice.actions
 
 export default authSlice.reducer

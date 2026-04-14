@@ -1,6 +1,12 @@
 ﻿import React from 'react'
+import useAuth from '../hooks/authhook';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+
+  const {isLoggedIn} = useAuth();
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
@@ -19,7 +25,7 @@ const Dashboard = () => {
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
-              <button className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-700">
+              <button onClick={()=>{isLoggedIn ? navigate('/generate-report') : navigate('/login')}} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-700">
                 Get Started
               </button>
               <button className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">

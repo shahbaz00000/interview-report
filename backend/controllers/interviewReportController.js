@@ -2,11 +2,12 @@ const InterviewReport = require("../models/reportModel.js");
 const generateInterviewReport = require("../services/aiServices.js");
 const connectMongoDB = require("../config/mongoDB.js");
 const { PDFParse } = require("pdf-parse");
+const sql = require("../config/db.js");
+
 
 const createInterviewReport = async (req, res) => {
   console.log("Received request to create interview report");
-
-  try {``
+  try {
     const { selfDescription, jobDescription } = req.body;
     const resume = req.file;
 
@@ -37,9 +38,18 @@ const createInterviewReport = async (req, res) => {
       resume: resumeText,
     });
     console.log("Generated interview report:", report);
-    res.status(201).json({message: "Interview report generated successfully", report });
 
-    
+    const interviewReport = new InterviewReport({
+      selfDescription,
+      jobDescription,
+      resume: resumeText,
+     ...report,
+    });
+    await interviewReport.save();
+
+    res
+      .status(201)
+      .json({ message: "Interview report generated successfully", report });
   } catch (error) {
     console.error("Error generating interview report:", error);
     return res.status(500).json({
