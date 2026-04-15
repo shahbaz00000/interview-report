@@ -20,7 +20,7 @@ const Home = () => {
     }
 
     const response = await axios.post(
-      "http://localhost:3000/api/generate-report",
+      "https://interview-report-gf6x.onrender.com/generate-report",
       formData,
       {
         headers: {
