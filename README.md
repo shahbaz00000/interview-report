@@ -24,6 +24,8 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Google Gemini](https://img.shields.io/badge/Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
+![OAuth](https://img.shields.io/badge/OAuth_2.0-EB5424?style=for-the-badge&logo=auth0&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 
 <br/>
 
@@ -60,10 +62,12 @@ Each day in the plan includes:
 - **Resources and exercises** aligned to the job role
 - Progressive difficulty from fundamentals to advanced concepts
 
-### 🔐 Authentication
-- Secure user registration & login
-- JWT-based session management
-- Report history saved per user
+### 🔐 Authentication & Authorization
+- **OAuth 2.0** social login (Google / GitHub)
+- Traditional email & password registration/login
+- **JWT** tokens for secure session management
+- Passport.js strategy for OAuth flow
+- Report history saved and linked per user account
 
 ---
 
@@ -83,7 +87,7 @@ interview-report-generator/
 │       ├── pages/
 │       │   ├── Home.jsx
 │       │   ├── Dashboard.jsx
-│       │   ├── Login.jsx
+│       │   ├── Login.jsx           # Email + OAuth login buttons
 │       │   └── Register.jsx
 │       ├── services/              # Axios API calls
 │       └── App.jsx
@@ -91,17 +95,18 @@ interview-report-generator/
 ├── server/                        # Node.js + Express Backend
 │   ├── config/
 │   │   ├── db.mongo.js            # MongoDB connection
-│   │   └── db.postgres.js         # PostgreSQL connection
+│   │   ├── db.postgres.js         # PostgreSQL connection
+│   │   └── passport.js            # OAuth strategies (Google/GitHub)
 │   ├── controllers/
 │   │   ├── auth.controller.js
 │   │   └── report.controller.js
 │   ├── middleware/
 │   │   └── auth.middleware.js     # JWT verification
 │   ├── models/
-│   │   ├── User.js                # MongoDB schema
+│   │   ├── User.js                # MongoDB schema (with oauthProvider field)
 │   │   └── Report.js              # MongoDB schema
 │   ├── routes/
-│   │   ├── auth.routes.js
+│   │   ├── auth.routes.js         # Email + OAuth routes
 │   │   └── report.routes.js
 │   ├── ai/
 │   │   ├── gemini.js              # Gemini AI config
@@ -126,7 +131,8 @@ interview-report-generator/
 | **Database 2** | PostgreSQL | Structured query data & analytics |
 | **AI Model** | Google Gemini API | LLM for report generation |
 | **AI Framework** | LangChain | Prompt chaining & pipeline |
-| **Auth** | JWT + bcryptjs | Secure authentication |
+| **Auth** | OAuth 2.0 + Passport.js | Google/GitHub social login |
+| **Session** | JWT + bcryptjs | Secure token-based sessions |
 | **File Handling** | Multer | Resume file upload |
 
 ---
@@ -206,6 +212,19 @@ JWT_SECRET=your_super_secret_jwt_key
 
 # Google Gemini AI
 GEMINI_API_KEY=your_gemini_api_key
+
+# OAuth 2.0 — Google
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+
+# OAuth 2.0 — GitHub (optional)
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+GITHUB_CALLBACK_URL=http://localhost:5000/api/auth/github/callback
+
+# Frontend URL
+CLIENT_URL=http://localhost:3000
 ```
 
 Start the backend:
@@ -236,8 +255,14 @@ npm start
 
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
-| `POST` | `/register` | Register new user | Public |
-| `POST` | `/login` | Login & receive JWT | Public |
+| `POST` | `/register` | Register with email & password | Public |
+| `POST` | `/login` | Login with email & password | Public |
+| `GET` | `/google` | Initiate Google OAuth login | Public |
+| `GET` | `/google/callback` | Google OAuth callback handler | Public |
+| `GET` | `/github` | Initiate GitHub OAuth login | Public |
+| `GET` | `/github/callback` | GitHub OAuth callback handler | Public |
+| `GET` | `/me` | Get current logged-in user | Private 🔒 |
+| `POST` | `/logout` | Logout & invalidate token | Private 🔒 |
 
 ### Report Routes — `/api/report`
 
